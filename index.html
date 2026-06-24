@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Pokémon Battle Buddy</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#F08030,#F8D030,#78C850,#6890F0,#EE99AC,#7038F8,#F08030);z-index:999}
+body{font-family:'Nunito',-apple-system,'Helvetica Neue',sans-serif;background:#f0f4ff;min-height:100vh;color:#1a1a2e;overflow-x:hidden;padding-top:5px}
+
+.pb{position:fixed;pointer-events:none;z-index:0}
+.spk{position:fixed;pointer-events:none;z-index:0;border-radius:50%;animation:twink var(--d) ease-in-out infinite var(--del)}
+@keyframes twink{0%,100%{opacity:.05;transform:scale(1)}50%{opacity:.18;transform:scale(1.6)}}
+.bgico{position:fixed;pointer-events:none;z-index:0;opacity:.04}
+
+.app{max-width:1080px;margin:0 auto;padding:14px 14px 40px;position:relative;z-index:1}
+
+/* HEADER */
+.header{text-align:center;padding:20px 10px 16px}
+.title-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.app-title{font-family:'Bangers',Impact,'Arial Black',sans-serif;font-size:clamp(32px,8vw,60px);color:#FFD700;-webkit-text-stroke:3px #1a5fa8;text-shadow:3px 3px 0 #1a5fa8,-1px -1px 0 #1a5fa8,1px -1px 0 #1a5fa8,-1px 1px 0 #1a5fa8;letter-spacing:2px;line-height:1.05}
+.hdeco{font-size:clamp(22px,4vw,34px);animation:spin var(--s,7s) linear infinite;display:inline-block;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tagline-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
+.app-tagline{font-size:clamp(13px,2.5vw,17px);font-weight:800;color:#3b4a7a}
+
+/* CTRL PANEL */
+.ctrl{background:white;border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,80,.09);border:1.5px solid rgba(180,195,255,.4)}
+.search-row{display:flex;gap:9px;margin-bottom:14px;align-items:stretch}
+.sw{flex:1;position:relative}
+.si{width:100%;height:54px;padding:0 16px 0 50px;font-size:17px;font-weight:700;font-family:inherit;background:white;border:2px solid #dde3ff;border-radius:14px;color:#1a1a2e;outline:none;-webkit-appearance:none;transition:border-color .2s}
+.si::placeholder{color:#a8b0cc}
+.si:focus{border-color:#5b8af5;box-shadow:0 0 0 3px rgba(91,138,245,.1)}
+.sico{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:22px;pointer-events:none}
+.mic-btn,.find-btn{height:54px;border-radius:14px;border:2px solid;font-family:inherit;font-weight:800;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.mic-btn{width:54px;background:white;border-color:#dde3ff;color:#3b4a7a;font-size:24px}
+.mic-btn.listening{background:#FF3B30;border-color:#FF3B30;color:white;animation:pred 1s infinite}
+.mic-btn:active{transform:scale(.92)}
+@keyframes pred{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,.45)}50%{box-shadow:0 0 0 9px rgba(255,59,48,0)}}
+.find-btn{padding:0 22px;background:linear-gradient(135deg,#FFD700,#FFA500);border-color:transparent;color:#5a2800;font-size:16px;box-shadow:0 3px 10px rgba(255,165,0,.25)}
+.find-btn:active{transform:scale(.96)}
+
+.type-row{display:flex;gap:12px}
+.tg{flex:1}
+.tlbl{font-size:11px;font-weight:800;color:#8090b8;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:7px}
+
+/* CUSTOM DROPDOWN */
+.cdr-outer{position:relative;z-index:10}
+.cdr-outer.is-open{z-index:50}
+.cdr-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:white;border:2px solid #dde3ff;border-radius:14px;cursor:pointer;min-height:54px;transition:border-color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;user-select:none}
+.cdr-btn:hover{border-color:#a0b4ff}
+.cdr-btn.open{border-color:#5b8af5;box-shadow:0 0 0 3px rgba(91,138,245,.1)}
+.cdr-val{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;flex:1}
+.cdr-ph{font-size:15px;font-weight:700;color:#a0a8c8;white-space:nowrap}
+.cdr-arr{flex-shrink:0;transition:transform .25s;width:16px;height:16px;color:#9098b8}
+.cdr-btn.open .cdr-arr{transform:rotate(180deg)}
+.cdr-pill{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:800;text-transform:uppercase;white-space:nowrap;overflow:hidden;max-width:100%}
+.cdr-pill-ico{width:22px;height:22px;flex-shrink:0}
+.cdr-list{position:absolute;top:calc(100% + 6px);left:0;right:0;background:white;border:2px solid #dde3ff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,80,.14);z-index:200;padding:10px;display:none;flex-wrap:wrap;gap:6px;max-height:310px;overflow-y:auto}
+.cdr-list.open{display:flex}
+.cdr-opt{display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:800;text-transform:uppercase;transition:opacity .15s,transform .1s;color:white;-webkit-tap-highlight-color:transparent;user-select:none}
+.cdr-opt:active{transform:scale(.93)}
+.cdr-opt-ico{width:20px;height:20px;flex-shrink:0}
+.cdr-none{background:#f0f2fa!important;color:#6070a0!important;width:100%;justify-content:center;font-size:13px;border-radius:10px;padding:8px 10px}
+
+/* STATUS */
+.sbar{min-height:34px;display:flex;align-items:center;justify-content:center;margin-top:11px;font-size:14px;font-weight:700;border-radius:10px;padding:0 12px;text-align:center;transition:all .3s}
+.sbar.hid{opacity:0;pointer-events:none}
+.sbar.loading{background:rgba(255,200,0,.12);color:#8a6000}
+.sbar.success{background:rgba(52,199,89,.12);color:#1a7a3a}
+.sbar.error{background:rgba(255,59,48,.12);color:#c01020}
+
+.pokename{text-align:center;margin-bottom:12px;font-size:17px;font-weight:800;color:#3b4a7a;min-height:26px}
+
+/* RESULTS */
+.rg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.empty-msg{grid-column:1/-1;text-align:center;padding:50px 20px;font-size:18px;font-weight:700;color:#a0a8c8}
+.rcol{background:white;border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,80,.08);border:1.5px solid rgba(180,195,255,.3)}
+.chead{padding:14px 10px;text-align:center;height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ctitle{font-size:14px;font-weight:900;color:white;text-transform:uppercase;letter-spacing:.3px;line-height:1.2}
+.csub{font-size:11px;color:rgba(255,255,255,.9);margin-top:4px;font-weight:700;line-height:1.3}
+.tent{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-bottom:1px solid #f0f2fc;animation:popIn .3s ease both}
+.tent:last-child{border-bottom:none}
+.tent:hover{background:#f8f9ff}
+@keyframes popIn{from{opacity:0;transform:translateY(-5px) scale(.97)}to{opacity:1;transform:none}}
+.tleft{display:flex;align-items:center;gap:7px}
+/* Icon container - swap-friendly:
+   To swap to image URL, replace innerHTML with:
+   <img src="YOUR_URL" width="34" height="34" style="display:block"> */
+.ticon{width:34px;height:34px;flex-shrink:0}
+.tname{padding:5px 10px;border-radius:8px;font-size:clamp(11px,1.8vw,14px);font-weight:800;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.mb{display:flex;align-items:center;justify-content:center;border-radius:9px;padding:5px 9px;font-weight:900;flex-shrink:0;gap:3px}
+.m4{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#5a2800;font-size:clamp(15px,2.5vw,21px);animation:ggold 2s ease-in-out infinite}
+@keyframes ggold{0%,100%{box-shadow:0 2px 10px rgba(255,180,0,.4)}50%{box-shadow:0 2px 22px rgba(255,180,0,.9)}}
+.m2{background:linear-gradient(135deg,#E0E0E0,#A8A8A8);color:#444;font-size:clamp(13px,2.2vw,18px);box-shadow:0 2px 6px rgba(0,0,0,.14)}
+.mneu{color:#c0c8e0;font-size:20px}
+.mhalf{background:linear-gradient(135deg,#FF8888,#EE2222);color:white}
+.mqtr{background:linear-gradient(135deg,#CC0000,#7a0000);color:white}
+.mimm{background:linear-gradient(135deg,#4A90D9,#1A5FBB);color:white;font-size:clamp(9px,1.4vw,11px);font-weight:900;padding:6px 9px;box-shadow:0 2px 8px rgba(74,144,217,.35);letter-spacing:.5px}
+.nent{color:#b0b8d8;font-size:13px;text-align:center;padding:18px;font-weight:700}
+
+@media(max-width:900px){.tname{font-size:11px;padding:4px 7px}.ticon{width:28px;height:28px}.tent{padding:8px 8px}.tleft{gap:5px}}
+@media(max-width:640px){.tname{font-size:10px;padding:3px 6px}.ticon{width:24px;height:24px}.rg{gap:8px}.app{padding:10px 10px 30px}}
+@media(max-width:450px){.tname{display:none}}
+</style>
+</head>
+<body>
+
+<!-- Pokéballs (faded red on white) -->
+<div id="pbs"></div>
+<div id="bgicos"></div>
+<div id="spks"></div>
+
+<div class="app">
+  <header class="header">
+    <div class="title-row">
+      <span class="hdeco" style="--s:9s">⚡</span>
+      <span class="app-title">Pokémon Battle Buddy</span>
+      <span class="hdeco" style="--s:12s">🌟</span>
+    </div>
+    <div class="tagline-wrap">
+      <span>🔥</span>
+      <span class="app-tagline">Know your type, win the fight!</span>
+      <span>🏆</span>
+    </div>
+  </header>
+
+  <div class="ctrl">
+    <div class="search-row">
+      <div class="sw">
+        <span class="sico">🔍</span>
+        <input class="si" id="si" type="text" placeholder="Search Pokémon (e.g. Pikachu, Charizard)..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <button class="mic-btn" id="mic">🎤</button>
+      <button class="find-btn" id="findbtn">Find!</button>
+    </div>
+    <div class="type-row">
+      <div class="tg">
+        <div class="tlbl">Type 1 (required)</div>
+        <div class="cdr-outer" id="do1">
+          <div class="cdr-btn" id="db1">
+            <div class="cdr-val"><span class="cdr-ph">— Pick a type —</span></div>
+            <svg class="cdr-arr" viewBox="0 0 16 16"><path d="M2 5l6 6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cdr-list" id="dl1"></div>
+        </div>
+      </div>
+      <div class="tg">
+        <div class="tlbl">Type 2 (optional)</div>
+        <div class="cdr-outer" id="do2">
+          <div class="cdr-btn" id="db2">
+            <div class="cdr-val"><span class="cdr-ph">— None —</span></div>
+            <svg class="cdr-arr" viewBox="0 0 16 16"><path d="M2 5l6 6 6-6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="cdr-list" id="dl2"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sbar hid" id="sbar"></div>
+  </div>
+
+  <div class="pokename" id="pkname"></div>
+  <div class="rg" id="rg"><div class="empty-msg">⚔️ Pick a type or search a Pokémon to begin!</div></div>
+</div>
+
+<script>
+// ═══ POKÉBALL SVG (faded red on white) ═══
+const PB_SVG=`<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(200,30,30,.18)" stroke-width="6"/><path d="M5 100A95 95 0 0 1 195 100Z" fill="rgba(200,30,30,.06)"/><rect x="5" y="91" width="190" height="18" rx="2" fill="rgba(200,30,30,.1)"/><circle cx="100" cy="100" r="26" fill="white" stroke="rgba(200,30,30,.18)" stroke-width="6"/><circle cx="100" cy="100" r="9" fill="rgba(200,30,30,.1)"/></svg>`;
+
+// ═══ SHIELD SVG ═══
+const SHI=`<svg viewBox="0 0 20 24" width="19" height="23" style="flex-shrink:0"><path d="M10 1L2 5V11C2 17 5.8 21.5 10 23C14.2 21.5 18 17 18 11V5L10 1Z" fill="white" fill-opacity=".92" stroke="rgba(255,255,255,.35)" stroke-width=".5"/></svg>`;
+
+// ═══ DATA ═══
+const T=['Normal','Fire','Water','Electric','Grass','Ice','Fighting','Poison','Ground','Flying','Psychic','Bug','Rock','Ghost','Dragon','Dark','Steel','Fairy'];
+const TC={Normal:'#A8A878',Fire:'#F08030',Water:'#6890F0',Electric:'#F8D030',Grass:'#78C850',Ice:'#98D8D8',Fighting:'#C03028',Poison:'#A040A0',Ground:'#E0C068',Flying:'#A890F0',Psychic:'#F85888',Bug:'#A8B820',Rock:'#B8A038',Ghost:'#705898',Dragon:'#7038F8',Dark:'#705848',Steel:'#B8B8D0',Fairy:'#EE99AC'};
+const TX={Normal:'white',Fire:'white',Water:'white',Electric:'#3a2800',Grass:'white',Ice:'#1a4040',Fighting:'white',Poison:'white',Ground:'#4a3000',Flying:'white',Psychic:'white',Bug:'white',Rock:'white',Ghost:'white',Dragon:'white',Dark:'white',Steel:'#303050',Fairy:'#5a1838'};
+
+const CHART={
+  Normal:  {Normal:1,Fire:1,Water:1,Electric:1,Grass:1,Ice:1,Fighting:2,Poison:1,Ground:1,Flying:1,Psychic:1,Bug:1,Rock:1,Ghost:0,Dragon:1,Dark:1,Steel:1,Fairy:1},
+  Fire:    {Normal:1,Fire:.5,Water:2,Electric:1,Grass:.5,Ice:.5,Fighting:1,Poison:1,Ground:2,Flying:1,Psychic:1,Bug:.5,Rock:2,Ghost:1,Dragon:1,Dark:1,Steel:.5,Fairy:.5},
+  Water:   {Normal:1,Fire:.5,Water:.5,Electric:2,Grass:2,Ice:.5,Fighting:1,Poison:1,Ground:1,Flying:1,Psychic:1,Bug:1,Rock:1,Ghost:1,Dragon:1,Dark:1,Steel:.5,Fairy:1},
+  Electric:{Normal:1,Fire:1,Water:1,Electric:.5,Grass:1,Ice:1,Fighting:1,Poison:1,Ground:2,Flying:.5,Psychic:1,Bug:1,Rock:1,Ghost:1,Dragon:1,Dark:1,Steel:.5,Fairy:1},
+  Grass:   {Normal:1,Fire:2,Water:.5,Electric:.5,Grass:.5,Ice:2,Fighting:1,Poison:2,Ground:.5,Flying:2,Psychic:1,Bug:2,Rock:1,Ghost:1,Dragon:1,Dark:1,Steel:1,Fairy:1},
+  Ice:     {Normal:1,Fire:2,Water:1,Electric:1,Grass:1,Ice:.5,Fighting:2,Poison:1,Ground:1,Flying:1,Psychic:1,Bug:1,Rock:2,Ghost:1,Dragon:1,Dark:1,Steel:2,Fairy:1},
+  Fighting:{Normal:1,Fire:1,Water:1,Electric:1,Grass:1,Ice:1,Fighting:1,Poison:1,Ground:1,Flying:2,Psychic:2,Bug:.5,Rock:.5,Ghost:1,Dragon:1,Dark:.5,Steel:1,Fairy:2},
+  Poison:  {Normal:1,Fire:1,Water:1,Electric:1,Grass:.5,Ice:1,Fighting:.5,Poison:.5,Ground:2,Flying:1,Psychic:2,Bug:.5,Rock:1,Ghost:1,Dragon:1,Dark:1,Steel:1,Fairy:.5},
+  Ground:  {Normal:1,Fire:1,Water:2,Electric:0,Grass:2,Ice:2,Fighting:1,Poison:.5,Ground:1,Flying:1,Psychic:1,Bug:1,Rock:.5,Ghost:1,Dragon:1,Dark:1,Steel:1,Fairy:1},
+  Flying:  {Normal:1,Fire:1,Water:1,Electric:2,Grass:.5,Ice:2,Fighting:.5,Poison:1,Ground:0,Flying:1,Psychic:1,Bug:.5,Rock:2,Ghost:1,Dragon:1,Dark:1,Steel:1,Fairy:1},
+  Psychic: {Normal:1,Fire:1,Water:1,Electric:1,Grass:1,Ice:1,Fighting:.5,Poison:1,Ground:1,Flying:1,Psychic:.5,Bug:2,Rock:1,Ghost:2,Dragon:1,Dark:2,Steel:1,Fairy:1},
+  Bug:     {Normal:1,Fire:2,Water:1,Electric:1,Grass:.5,Ice:1,Fighting:.5,Poison:1,Ground:.5,Flying:2,Psychic:1,Bug:1,Rock:2,Ghost:1,Dragon:1,Dark:1,Steel:1,Fairy:1},
+  Rock:    {Normal:.5,Fire:.5,Water:2,Electric:1,Grass:2,Ice:1,Fighting:2,Poison:.5,Ground:2,Flying:.5,Psychic:1,Bug:1,Rock:1,Ghost:1,Dragon:1,Dark:1,Steel:2,Fairy:1},
+  Ghost:   {Normal:0,Fire:1,Water:1,Electric:1,Grass:1,Ice:1,Fighting:0,Poison:.5,Ground:1,Flying:1,Psychic:1,Bug:.5,Rock:1,Ghost:2,Dragon:1,Dark:2,Steel:1,Fairy:1},
+  Dragon:  {Normal:1,Fire:.5,Water:.5,Electric:.5,Grass:.5,Ice:2,Fighting:1,Poison:1,Ground:1,Flying:1,Psychic:1,Bug:1,Rock:1,Ghost:1,Dragon:2,Dark:1,Steel:1,Fairy:2},
+  Dark:    {Normal:1,Fire:1,Water:1,Electric:1,Grass:1,Ice:1,Fighting:2,Poison:1,Ground:1,Flying:1,Psychic:0,Bug:2,Rock:1,Ghost:.5,Dragon:1,Dark:.5,Steel:1,Fairy:2},
+  Steel:   {Normal:.5,Fire:2,Water:1,Electric:1,Grass:.5,Ice:.5,Fighting:2,Poison:0,Ground:2,Flying:.5,Psychic:.5,Bug:.5,Rock:.5,Ghost:1,Dragon:.5,Dark:1,Steel:.5,Fairy:.5},
+  Fairy:   {Normal:1,Fire:1,Water:1,Electric:1,Grass:1,Ice:1,Fighting:.5,Poison:2,Ground:1,Flying:1,Psychic:1,Bug:.5,Rock:1,Ghost:1,Dragon:0,Dark:.5,Steel:2,Fairy:1}
+};
+
+// ═══ SVG ICONS (Let's Go Eevee inspired) ═══
+// To swap to image URL: replace the SVG string with `<img src="URL" width="100%" height="100%">`
+const ICONS={
+Bug:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#A8B820" stroke="#788008" stroke-width="1.5"/><ellipse cx="12" cy="17" rx="10" ry="5.5" fill="white" opacity=".88" transform="rotate(-38 12 17)"/><ellipse cx="32" cy="17" rx="10" ry="5.5" fill="white" opacity=".88" transform="rotate(38 32 17)"/><ellipse cx="12" cy="26" rx="9" ry="5" fill="white" opacity=".6" transform="rotate(-25 12 26)"/><ellipse cx="32" cy="26" rx="9" ry="5" fill="white" opacity=".6" transform="rotate(25 32 26)"/><ellipse cx="22" cy="22" rx="4" ry="9" fill="#5a6800"/><line x1="20" y1="13" x2="13" y2="7" stroke="#5a6800" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="13" x2="31" y2="7" stroke="#5a6800" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="7" r="2.2" fill="#5a6800"/><circle cx="31" cy="7" r="2.2" fill="#5a6800"/></svg>`,
+Dark:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#705848" stroke="#3a2818" stroke-width="1.5"/><circle cx="22" cy="22" r="13" fill="white" opacity=".9"/><circle cx="29" cy="17" r="12" fill="#705848"/><circle cx="15" cy="24" r="2" fill="white" opacity=".5"/></svg>`,
+Dragon:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#7038F8" stroke="#4018c0" stroke-width="1.5"/><polygon points="22,6 37,23 29,38 15,38 7,23" fill="none" stroke="white" stroke-width="3" stroke-linejoin="round" opacity=".9"/><polygon points="22,14 31,26 22,31 13,26" fill="white" opacity=".28"/><polygon points="22,18 28,26 22,29 16,26" fill="white" opacity=".55"/><polygon points="22,8 27,15 22,13 17,15" fill="white" opacity=".9"/></svg>`,
+Electric:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#F8D030" stroke="#c0a000" stroke-width="1.5"/><polygon points="28,5 13,23 22,23 16,39 32,17 23,17" fill="white" opacity=".9"/><polygon points="28,5 13,23 22,23 16,39 32,17 23,17" fill="#8a6000" opacity=".22" transform="translate(1.5,1.5)"/></svg>`,
+Fairy:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#EE99AC" stroke="#c06070" stroke-width="1.5"/><polygon points="22,6 25.5,18 38,18 28,26 31.5,38 22,30 12.5,38 16,26 6,18 18.5,18" fill="white" opacity=".9"/><circle cx="22" cy="22" r="3.5" fill="#EE99AC" opacity=".9"/></svg>`,
+Fighting:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#C03028" stroke="#801010" stroke-width="1.5"/><rect x="13" y="20" width="19" height="13" rx="5" fill="white" opacity=".9"/><rect x="13" y="12" width="7.5" height="11" rx="3.5" fill="white" opacity=".9"/><rect x="21.5" y="13" width="7" height="10" rx="3.5" fill="white" opacity=".9"/><rect x="9" y="20" width="5" height="8" rx="2.5" fill="white" opacity=".7"/></svg>`,
+Fire:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#F08030" stroke="#b04000" stroke-width="1.5"/><path d="M22 7C22 7 32 16 32 25C32 32 28 38 22 38C16 38 12 32 12 25C12 16 22 7Z" fill="white" opacity=".9"/><path d="M22 18C22 18 27 23 27 28C27 33 25 36 22 36C19 36 17 33 17 28C17 23 22 18Z" fill="#F08030" opacity=".55"/><path d="M19 11C17 16 17 21 18 26" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".5"/></svg>`,
+Flying:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#A890F0" stroke="#6850c0" stroke-width="1.5"/><path d="M6 26C6 26 15 11 28 13C35 14.5 39 21 39 21C39 21 30 16 20 21C13 25 9 33 9 33Z" fill="white" opacity=".9"/><path d="M7 32C7 32 14 19 26 21C33 22.5 37 29 37 29C37 29 29 24 19 28C12 31 9 38 9 38Z" fill="white" opacity=".6"/><circle cx="30" cy="16.5" r="4.5" fill="white" opacity=".82"/></svg>`,
+Ghost:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#705898" stroke="#402858" stroke-width="1.5"/><path d="M11 31C11 19 16 9 22 9C28 9 33 19 33 31L33 38L29 34L25 38L22 35L19 38L15 34L11 38Z" fill="white" opacity=".9"/><circle cx="17.5" cy="22" r="3.5" fill="#705898"/><circle cx="26.5" cy="22" r="3.5" fill="#705898"/><circle cx="16.5" cy="21" r="1.3" fill="white"/><circle cx="25.5" cy="21" r="1.3" fill="white"/></svg>`,
+Grass:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#78C850" stroke="#488020" stroke-width="1.5"/><path d="M22 6C22 6 38 12 38 25C38 34 31 40 22 40C13 40 6 34 6 25C6 12 22 6Z" fill="white" opacity=".9"/><line x1="22" y1="9" x2="22" y2="38" stroke="#78C850" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="17" x2="13" y2="27" stroke="#78C850" stroke-width="2.2" stroke-linecap="round"/><line x1="22" y1="23" x2="31" y2="32" stroke="#78C850" stroke-width="2.2" stroke-linecap="round"/><line x1="22" y1="13" x2="31" y2="22" stroke="#78C850" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+Ground:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#E0C068" stroke="#a08028" stroke-width="1.5"/><polygon points="9,36 20,14 31,36" fill="white" opacity=".9"/><polygon points="21,36 30,18 40,36" fill="white" opacity=".62"/><rect x="5" y="34" width="34" height="4" rx="2" fill="white" opacity=".72"/><polygon points="20,14 17,23 23,23" fill="#E0C068" opacity=".6"/><polygon points="30,18 28,25 32,25" fill="#E0C068" opacity=".5"/></svg>`,
+Ice:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#98D8D8" stroke="#50a8b8" stroke-width="1.5"/><line x1="22" y1="5" x2="22" y2="39" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity=".9"/><line x1="5" y1="22" x2="39" y2="22" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity=".9"/><line x1="9" y1="9" x2="35" y2="35" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".8"/><line x1="35" y1="9" x2="9" y2="35" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".8"/><line x1="22" y1="5" x2="17" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="5" x2="27" y2="10" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="39" x2="17" y2="34" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="39" x2="27" y2="34" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="22" x2="10" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="22" x2="10" y2="27" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="39" y1="22" x2="34" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="39" y1="22" x2="34" y2="27" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="22" cy="22" r="3.5" fill="white"/></svg>`,
+Normal:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#A8A878" stroke="#686848" stroke-width="1.5"/><circle cx="22" cy="22" r="14" fill="none" stroke="white" stroke-width="5" opacity=".9"/><circle cx="22" cy="22" r="4.5" fill="white" opacity=".9"/></svg>`,
+Poison:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#A040A0" stroke="#602060" stroke-width="1.5"/><ellipse cx="22" cy="20" rx="10.5" ry="12" fill="white" opacity=".9"/><circle cx="17.5" cy="17.5" r="3.5" fill="#A040A0"/><circle cx="26.5" cy="17.5" r="3.5" fill="#A040A0"/><ellipse cx="22" cy="24" rx="2" ry="2.5" fill="#A040A0"/><rect x="14" y="28.5" width="16" height="5.5" rx="2.5" fill="white" opacity=".9"/><rect x="17.5" y="28.5" width="1.5" height="5.5" fill="#A040A0" opacity=".4"/><rect x="21.5" y="28.5" width="1.5" height="5.5" fill="#A040A0" opacity=".4"/><rect x="25.5" y="28.5" width="1.5" height="5.5" fill="#A040A0" opacity=".4"/></svg>`,
+Psychic:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#F85888" stroke="#c01848" stroke-width="1.5"/><ellipse cx="22" cy="22" rx="14" ry="5" fill="none" stroke="white" stroke-width="2.5" opacity=".82"/><ellipse cx="22" cy="22" rx="14" ry="5" fill="none" stroke="white" stroke-width="2.5" opacity=".6" transform="rotate(60 22 22)"/><ellipse cx="22" cy="22" rx="14" ry="5" fill="none" stroke="white" stroke-width="2.5" opacity=".6" transform="rotate(120 22 22)"/><circle cx="22" cy="22" r="5" fill="none" stroke="white" stroke-width="3" opacity=".9"/><circle cx="22" cy="22" r="2.5" fill="white" opacity=".9"/><circle cx="36" cy="22" r="3" fill="white" opacity=".9"/></svg>`,
+Rock:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#B8A038" stroke="#786808" stroke-width="1.5"/><polygon points="22,6 36,14 36,30 22,38 8,30 8,14" fill="white" opacity=".9"/><polygon points="22,6 36,14 22,17 8,14" fill="white" opacity=".42"/><line x1="8" y1="14" x2="36" y2="14" stroke="#B8A038" stroke-width="1.8" opacity=".45"/><line x1="8" y1="30" x2="36" y2="30" stroke="#B8A038" stroke-width="1.5" opacity=".3"/><line x1="22" y1="6" x2="22" y2="38" stroke="#B8A038" stroke-width="1.5" opacity=".3"/></svg>`,
+Steel:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#B8B8D0" stroke="#787890" stroke-width="1.5"/><polygon points="22,10 30,14.5 30,22 22,26.5 14,22 14,14.5" fill="white" opacity=".9"/><polygon points="22,17.5 30,22 30,29.5 22,34 14,29.5 14,22" fill="white" opacity=".65"/><circle cx="22" cy="22" r="5" fill="#B8B8D0"/><rect x="20" y="4" width="4" height="6" rx="1.5" fill="white" opacity=".9"/><rect x="20" y="34" width="4" height="6" rx="1.5" fill="white" opacity=".9"/><rect x="4" y="20" width="6" height="4" rx="1.5" fill="white" opacity=".9"/><rect x="34" y="20" width="6" height="4" rx="1.5" fill="white" opacity=".9"/></svg>`,
+Water:`<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="21" fill="#6890F0" stroke="#2850c0" stroke-width="1.5"/><path d="M22 5C22 5 7 21 7 30C7 38 14 42 22 42C30 42 37 38 37 30C37 21 22 5Z" fill="white" opacity=".9"/><ellipse cx="16.5" cy="25.5" rx="3.5" ry="6" fill="white" opacity=".38" transform="rotate(-20 16.5 25.5)"/><ellipse cx="15.5" cy="22.5" rx="1.8" ry="3.5" fill="white" opacity=".55" transform="rotate(-20 15.5 22.5)"/></svg>`
+};
+
+// ═══ LOGIC ═══
+function calcEff(t1,t2){
+  const o={};
+  for(const a of T){let m=CHART[t1][a];if(t2)m*=CHART[t2][a];o[a]=m;}
+  return o;
+}
+
+function badge(m){
+  if(m===4)return`<div class="mb m4">4×</div>`;
+  if(m===2)return`<div class="mb m2">2×</div>`;
+  if(m===1)return`<span class="mneu">—</span>`;
+  if(m===.5)return`<div class="mb mhalf">${SHI}</div>`;
+  if(m===.25)return`<div class="mb mqtr">${SHI}${SHI}</div>`;
+  if(m===0)return`<div class="mb mimm">🚫 IMMUNE</div>`;
+  return`<span>${m}×</span>`;
+}
+
+function tRow(atk,m,i){
+  return`<div class="tent" style="animation-delay:${i*.065}s">
+    <div class="tleft">
+      <div class="ticon">${ICONS[atk]}</div>
+      <span class="tname" style="background:${TC[atk]};color:${TX[atk]}">${atk.toUpperCase()}</span>
+    </div>${badge(m)}</div>`;
+}
+
+function tCol(title,sub,grad,entries){
+  const rows=entries.length?entries.map(([t,m],i)=>tRow(t,m,i)).join(''):`<div class="nent">None!</div>`;
+  return`<div class="rcol"><div class="chead" style="${grad}"><div class="ctitle">${title}</div><div class="csub">${sub}</div></div>${rows}</div>`;
+}
+
+function render(t1,t2){
+  if(!t1){document.getElementById('rg').innerHTML='<div class="empty-msg">⚔️ Pick a type or search a Pokémon to begin!</div>';return;}
+  const e=calcEff(t1,t2),se=[],neu=[],ne=[];
+  for(const[t,m]of Object.entries(e)){if(m>1)se.push([t,m]);else if(m===1)neu.push([t,m]);else ne.push([t,m]);}
+  se.sort((a,b)=>b[1]-a[1]);ne.sort((a,b)=>b[1]-a[1]);
+  document.getElementById('rg').innerHTML=
+    tCol('💥 Super Effective','These do BIG damage — use these move types!','background:linear-gradient(135deg,#2ecc71,#17a34a)',se)+
+    tCol('😐 Normal Damage','These do normal damage','background:linear-gradient(135deg,#f39c12,#d68910)',neu)+
+    tCol('🛡️ Not Effective',"Don't use these move types!",'background:linear-gradient(135deg,#e74c3c,#c0392b)',ne);
+}
+
+// ═══ CUSTOM DROPDOWN ═══
+let activeDD=null;
+function closeAll(){
+  if(activeDD){activeDD.btn.classList.remove('open');activeDD.list.classList.remove('open');activeDD.outer.classList.remove('is-open');activeDD=null;}
+}
+document.addEventListener('click',closeAll);
+
+function makeDD(btnId,listId,outerId,isOpt,defaultPh,onChange){
+  const btn=document.getElementById(btnId),list=document.getElementById(listId),outer=document.getElementById(outerId);
+  let val='';
+
+  function setTrigger(v){
+    const el=btn.querySelector('.cdr-val');
+    if(!v){el.innerHTML=`<span class="cdr-ph">${defaultPh}</span>`;}
+    else{el.innerHTML=`<div class="cdr-pill" style="background:${TC[v]};color:${TX[v]}"><div class="cdr-pill-ico">${ICONS[v]}</div><span>${v.toUpperCase()}</span></div>`;}
+  }
+
+  if(isOpt){
+    const n=document.createElement('div');
+    n.className='cdr-opt cdr-none';n.textContent='— None (Single Type) —';
+    n.addEventListener('click',e=>{e.stopPropagation();val='';setTrigger('');closeAll();onChange('');});
+    list.appendChild(n);
+  }
+  T.forEach(type=>{
+    const o=document.createElement('div');
+    o.className='cdr-opt';o.style.background=TC[type];o.style.color=TX[type];
+    o.innerHTML=`<div class="cdr-opt-ico">${ICONS[type]}</div><span>${type.toUpperCase()}</span>`;
+    o.addEventListener('click',e=>{e.stopPropagation();val=type;setTrigger(type);closeAll();onChange(type);});
+    list.appendChild(o);
+  });
+
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(list.classList.contains('open')){closeAll();}
+    else{closeAll();btn.classList.add('open');list.classList.add('open');outer.classList.add('is-open');activeDD={btn,list,outer};}
+  });
+
+  return{set(v){val=v;setTrigger(v);},get(){return val;}};
+}
+
+// ═══ STATUS ═══
+let stT;
+function status(type,msg){
+  const el=document.getElementById('sbar');
+  el.className=`sbar ${type}`;el.textContent=msg;
+  clearTimeout(stT);if(type!=='loading')stT=setTimeout(()=>el.classList.add('hid'),3800);
+}
+
+// ═══ POKÉAPI ═══
+let d1,d2;
+async function findPoke(raw){
+  const name=raw.trim().toLowerCase().replace(/\s+/g,'-');
+  if(!name)return;
+  status('loading',`Searching for "${raw}"...`);
+  try{
+    const r=await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+    if(!r.ok)throw 0;
+    const data=await r.json();
+    const types=data.types.sort((a,b)=>a.slot-b.slot).map(t=>t.type.name.charAt(0).toUpperCase()+t.type.name.slice(1));
+    const t1=types[0]||'',t2=types[1]||'';
+    d1.set(t1);d2.set(t2);
+    const label=types.map(t=>`${t}`).join(' + ');
+    const n=data.name.split('-').map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+    document.getElementById('pkname').textContent=`${n}: ${label}`;
+    render(t1,t2||null);
+    status('success',`Found ${n}! 🎉`);
+  }catch{status('error',`Couldn't find "${raw}". Try another spelling!`);}
+}
+
+// ═══ VOICE ═══
+function initVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const btn=document.getElementById('mic');
+  if(!SR){btn.style.opacity='.35';btn.title='Voice search needs Safari on iPad';return;}
+  const rec=new SR();rec.lang='en-US';rec.maxAlternatives=1;
+  rec.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('si').value=t;findPoke(t);};
+  rec.onend=()=>btn.classList.remove('listening');
+  rec.onerror=()=>{btn.classList.remove('listening');status('error','Voice error — try again!');};
+  btn.addEventListener('click',()=>{
+    if(btn.classList.contains('listening')){rec.stop();}
+    else{btn.classList.add('listening');try{rec.start();}catch{btn.classList.remove('listening');}}
+  });
+}
+
+// ═══ DECORATIONS ═══
+function buildDecos(){
+  // Pokéballs (faded red)
+  const pbCfg=[
+    {w:300,top:'-90px',right:'-90px',left:'auto',bottom:'auto',op:1},
+    {w:200,bottom:'-55px',left:'-55px',top:'auto',right:'auto',op:1},
+    {w:130,top:'42%',right:'6px',left:'auto',bottom:'auto',op:.5},
+    {w:110,top:'62%',left:'4px',right:'auto',bottom:'auto',op:.4},
+    {w:80,top:'20%',left:'2%',right:'auto',bottom:'auto',op:.3},
+  ];
+  const pbWrap=document.getElementById('pbs');
+  pbCfg.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='pb';
+    d.style.cssText=`width:${c.w}px;height:${c.w}px;top:${c.top};bottom:${c.bottom};left:${c.left};right:${c.right};opacity:${c.op}`;
+    d.innerHTML=PB_SVG;pbWrap.appendChild(d);
+  });
+
+  // Scattered background type icons (very faint)
+  const bgTypes=['Fire','Water','Dragon','Electric','Ghost','Fairy','Psychic'];
+  const bgWrap=document.getElementById('bgicos');
+  bgTypes.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='bgico';
+    const sz=50+Math.floor(Math.random()*50);
+    d.style.cssText=`width:${sz}px;height:${sz}px;top:${8+Math.random()*80}%;left:${4+Math.random()*92}%;transform:rotate(${Math.random()*30-15}deg);opacity:${.03+Math.random()*.03}`;
+    d.innerHTML=ICONS[t];bgWrap.appendChild(d);
+  });
+
+  // Coloured sparkle dots
+  const spkColors=['#F08030','#F8D030','#6890F0','#78C850','#EE99AC','#7038F8','#F85888'];
+  const spkWrap=document.getElementById('spks');
+  for(let i=0;i<30;i++){
+    const s=document.createElement('div');s.className='spk';
+    const sz=3+Math.random()*4;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;background:${spkColors[i%spkColors.length]};--d:${2.5+Math.random()*4}s;--del:-${Math.random()*4}s`;
+    spkWrap.appendChild(s);
+  }
+}
+
+// ═══ INIT ═══
+buildDecos();
+d1=makeDD('db1','dl1','do1',false,'— Pick a type —',v=>{document.getElementById('pkname').textContent='';render(v||null,d2.get()||null);});
+d2=makeDD('db2','dl2','do2',true,'— None —',v=>{document.getElementById('pkname').textContent='';render(d1.get()||null,v||null);});
+initVoice();
+document.getElementById('findbtn').addEventListener('click',()=>findPoke(document.getElementById('si').value));
+document.getElementById('si').addEventListener('keydown',e=>{if(e.key==='Enter')findPoke(e.target.value);});
+</script>
+</body>
+</html>
